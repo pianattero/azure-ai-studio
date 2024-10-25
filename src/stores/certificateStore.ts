@@ -32,6 +32,7 @@ export type RootState = {
   showCertificateChecks: boolean
   currentCertificate: Certificate
   certificatePoCValidation: CertificateValidation | null
+  isDocInfoExtacted: boolean
 }
 
 export const useCertificateStore = defineStore({
@@ -40,7 +41,8 @@ export const useCertificateStore = defineStore({
     ({
       showCertificateChecks: false,
       currentCertificate: currentCertificate,
-      certificatePoCValidation: null
+      certificatePoCValidation: null,
+      isDocInfoExtacted: false
     }) as RootState,
   getters: {},
   actions: {}

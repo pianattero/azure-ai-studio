@@ -26,14 +26,17 @@
         </iframe>
       </div>
 
+      <!-- HEADER CERTIFICADO -->
       <div class="validation-wrapper">
         <div class="doc-number">
           <h3 class="title">
-            {{
-              certificatePoCValidation?.docType === docTypeEnum.ADR
-                ? 'Certificado ADR'
-                : 'Certificado de Lavado'
-            }}
+            <u>
+              {{
+                certificatePoCValidation?.docType === docTypeEnum.ADR
+                  ? 'Certificado ADR'
+                  : 'Certificado de Lavado'
+              }}
+            </u>
           </h3>
           <div class="detail-header-icons">
             <img class="icon-close" src="@/assets/icons/close.svg" @click="handleClose" />
@@ -98,71 +101,101 @@
 
         <!-- CERTIFICADO ADR -->
         <div v-if="certificatePoCValidation?.docType === docTypeEnum.ADR" class="section-container">
-          <div class="section-wrapper">
-            <ul class="items-list">
-              <li class="item" v-for="item in adrCertificateData.section1" :key="item.key">
-                <b>{{ item.field }}:</b>
-                {{ certificatePoCValidation.extractedFields[item.key] }}
-              </li>
-            </ul>
-          </div>
-          <div class="section-wrapper">
-            <span class="section-title"><b>Descripción del vehículo:</b></span>
-            <ul class="items-list">
-              <li class="item" v-for="item in adrCertificateData.section3" :key="item.key">
-                {{ certificatePoCValidation.extractedFields[item.key] }}
-              </li>
-            </ul>
-          </div>
-          <div class="section-wrapper">
-            <span class="section-title"><b>Dispositivo de frenos de resistencia:</b></span>
-            <ul class="items-list">
-              <AppCheckbox
-                class="checkbox"
-                :title="adrCertificateData.section5[0].field"
-                :disabled="true"
-                :validated="
-                  certificatePoCValidation.extractedFields[adrCertificateData.section5[0].key] ===
-                  ':selected:'
-                    ? true
-                    : false
-                "
-              />
-              <AppCheckbox
-                class="checkbox"
-                :title="`${adrCertificateData.section5[1].field} 
-                  ${certificatePoCValidation.extractedFields[adrCertificateData.section5[2].key] ? certificatePoCValidation.extractedFields[adrCertificateData.section5[2].key] : '________________'} 
-                  t`"
-                :disabled="true"
-                :validated="
-                  certificatePoCValidation.extractedFields[adrCertificateData.section5[1].key] ===
-                  ':selected:'
-                    ? true
-                    : false
-                "
-              />
-            </ul>
-          </div>
-          <div class="section-wrapper">
-            <span class="section-title"
-              ><b>Mercancías peligrosas autorizadas para su transporte:</b></span
+          <div class="export-button">
+            <button
+              class="button"
+              :class="{ 'disabled-button': isDocInfoExtacted || visibleSections[0] }"
+              v-if="!loadingDocInfo"
+              @click="exportInfo"
             >
-            <ul class="items-list">
-              <AppCheckbox
-                v-for="item in adrCertificateData.section7"
-                :key="item.key"
-                class="checkbox"
-                :title="item.field"
-                :disabled="true"
-                :validated="
-                  certificatePoCValidation.extractedFields[item.key] === ':selected:' ? true : false
-                "
-              />
-            </ul>
+              Extraer datos
+            </button>
+            <button class="button disabled-button" v-else @click="exportInfo">
+              <img class="spin" src="@/assets/icons/sync.svg" />
+            </button>
           </div>
-          <div class="buttons">
-            <button class="button" @click="handleClose">Rechazar documento</button>
-            <button class="button" @click="handleClose">Validar documento</button>
+
+          <div class="content-wrapper">
+            <div
+              class="section-wrapper"
+              :class="{ visible: visibleSections[0], invisible: !isDocInfoExtacted }"
+            >
+              <ul class="items-list">
+                <li class="item" v-for="item in adrCertificateData.section1" :key="item.key">
+                  <b>{{ item.field }}:</b>
+                  {{ certificatePoCValidation.extractedFields[item.key] }}
+                </li>
+              </ul>
+            </div>
+            <div
+              class="section-wrapper"
+              :class="{ visible: visibleSections[1], invisible: !isDocInfoExtacted }"
+            >
+              <span class="section-title"><b>Descripción del vehículo:</b></span>
+              <ul class="items-list">
+                <li class="item" v-for="item in adrCertificateData.section3" :key="item.key">
+                  {{ certificatePoCValidation.extractedFields[item.key] }}
+                </li>
+              </ul>
+            </div>
+            <div
+              class="section-wrapper"
+              :class="{ visible: visibleSections[2], invisible: !isDocInfoExtacted }"
+            >
+              <span class="section-title"><b>Dispositivo de frenos de resistencia:</b></span>
+              <ul class="items-list">
+                <AppCheckbox
+                  class="checkbox"
+                  :title="adrCertificateData.section5[0].field"
+                  :disabled="true"
+                  :validated="
+                    certificatePoCValidation.extractedFields[adrCertificateData.section5[0].key] ===
+                    ':selected:'
+                      ? true
+                      : false
+                  "
+                />
+                <AppCheckbox
+                  class="checkbox"
+                  :title="`${adrCertificateData.section5[1].field} 
+                    ${certificatePoCValidation.extractedFields[adrCertificateData.section5[2].key] ? certificatePoCValidation.extractedFields[adrCertificateData.section5[2].key] : '________________'} 
+                    t`"
+                  :disabled="true"
+                  :validated="
+                    certificatePoCValidation.extractedFields[adrCertificateData.section5[1].key] ===
+                    ':selected:'
+                      ? true
+                      : false
+                  "
+                />
+              </ul>
+            </div>
+            <div
+              class="section-wrapper"
+              :class="{ visible: visibleSections[3], invisible: !isDocInfoExtacted }"
+            >
+              <span class="section-title"
+                ><b>Mercancías peligrosas autorizadas para su transporte:</b></span
+              >
+              <ul class="items-list">
+                <AppCheckbox
+                  v-for="item in adrCertificateData.section7"
+                  :key="item.key"
+                  class="checkbox"
+                  :title="item.field"
+                  :disabled="true"
+                  :validated="
+                    certificatePoCValidation.extractedFields[item.key] === ':selected:'
+                      ? true
+                      : false
+                  "
+                />
+              </ul>
+            </div>
+            <div v-if="isDocInfoExtacted" class="buttons">
+              <button class="button" @click="handleClose">Rechazar documento</button>
+              <button class="button" @click="handleClose">Validar documento</button>
+            </div>
           </div>
         </div>
       </div>
@@ -178,7 +211,7 @@ import { useCertificateStore } from '@/stores/certificateStore'
 import AppCheckbox from './AppCheckbox.vue'
 
 // STORE
-const { showCertificateChecks, currentCertificate, certificatePoCValidation } =
+const { showCertificateChecks, currentCertificate, certificatePoCValidation, isDocInfoExtacted } =
   storeToRefs(useCertificateStore())
 
 // TYPES
@@ -230,6 +263,13 @@ const iframeKey: Ref<number> = ref(0)
 const errors: Ref<string[]> = ref([])
 const errorMsg: Ref<string> = ref('')
 
+const visibleSections: Ref<boolean[]> = ref([
+  isDocInfoExtacted.value,
+  isDocInfoExtacted.value,
+  isDocInfoExtacted.value,
+  isDocInfoExtacted.value
+])
+const loadingDocInfo: Ref<boolean> = ref(false)
 const PoCValidationDone: Ref<boolean> = ref(false)
 const washingCertificateCodes = [
   'C01',
@@ -351,7 +391,6 @@ onMounted(() => {
   if (props.fileUrl) {
     originalImg.value = props.fileUrl
     rotatedImg.value = props.fileUrl
-    console.log(originalImg.value)
   }
 
   currentCertificate.value.sections.forEach((section) => {
@@ -377,6 +416,31 @@ const iframeSrc = computed(() => {
 // METHODS
 function handleClose() {
   showCertificateChecks.value = false
+}
+
+function showSectionsInfo() {
+  let index = 0
+
+  function showSection() {
+    if (index < visibleSections.value.length) {
+      visibleSections.value[index] = true
+      index++
+      setTimeout(showSection, 1000)
+    } else {
+      isDocInfoExtacted.value = true
+    }
+  }
+
+  showSection()
+}
+
+function exportInfo() {
+  loadingDocInfo.value = true
+
+  setTimeout(() => {
+    loadingDocInfo.value = false
+    showSectionsInfo()
+  }, 2000)
 }
 
 function zoomIn() {
@@ -430,7 +494,6 @@ function getValidatedChecks() {
     })
   })
 
-  // console.log(pointArr)
   return pointArr
 }
 
@@ -440,8 +503,6 @@ function handleValidationCheck() {
 
     getProhibitedCodes()
     getValidationPoints()
-
-    // console.log('ERRORS', errors.value)
 
     if (errors.value.length > 0) {
       errorMsg.value =
@@ -492,7 +553,6 @@ function getValidationPoints() {
       })
     }
   })
-  // console.log('COMMON', validationPointsArray)
 
   validationPointsArray.forEach((points: AllPoints) => {
     if (points.pocPoint.value) {
@@ -584,9 +644,51 @@ function getValidationPoints() {
         }
       }
 
+      .button {
+        cursor: pointer;
+        margin-bottom: 1em;
+        width: 200px;
+        height: 3rem;
+        border: none;
+        font-size: 16px;
+        border-radius: 8px;
+        padding: 0 1.2rem;
+        color: $c-white;
+        background-color: $c-turquoise-80;
+
+        & .spin {
+          margin-top: 4px;
+          animation: spin linear 0.5s infinite;
+        }
+      }
+
+      .disabled-button {
+        background: $c-grey-30;
+        border-color: $c-grey-30;
+        color: $c-grey-50;
+        pointer-events: none;
+        cursor: auto;
+      }
+
+      .content-wrapper {
+        & .invisible {
+          opacity: 0;
+          transition: opacity 1s ease-in-out;
+        }
+
+        & .visible {
+          opacity: 1;
+        }
+      }
+
       .section-container {
         display: flex;
         flex-direction: column;
+
+        & .export-button {
+          display: flex;
+          justify-content: center;
+        }
 
         & .buttons {
           display: flex;
@@ -595,25 +697,15 @@ function getValidationPoints() {
           gap: 2rem;
           margin-top: 2rem;
 
-          .button {
-            cursor: pointer;
-            width: 200px;
-            height: 3rem;
-            border: none;
-            font-size: 16px;
-            border-radius: 8px;
-            padding: 0 1.2rem;
-          }
-
           .button:first-child {
             background-color: $c-turquoise-invent;
             color: $c-turquoise-80;
           }
 
-          .button:last-child {
-            color: $c-white;
-            background-color: $c-turquoise-80;
-          }
+          // .button:last-child {
+          //   color: $c-white;
+          //   background-color: $c-turquoise-80;
+          // }
         }
 
         .section-wrapper {
@@ -679,6 +771,15 @@ function getValidationPoints() {
         cursor: pointer;
       }
     }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

@@ -3,7 +3,7 @@
     <TheSideMenu />
     <div v-if="!showCertificateChecks" class="content-container">
       <div class="doc-uploader-wrapper">
-        <label class="upload-wrapper">
+        <label class="upload-wrapper" :class="{ 'disabled-button': loading }">
           <div v-if="!loading">
             Cargar Archivo
             <input
@@ -58,7 +58,8 @@ import TheSideMenu from '@/components/TheSideMenu.vue'
 import CertificateChecks from '@/components/CertificateChecks.vue'
 
 // STORE
-const { showCertificateChecks, certificatePoCValidation } = storeToRefs(useCertificateStore())
+const { showCertificateChecks, certificatePoCValidation, isDocInfoExtacted } =
+  storeToRefs(useCertificateStore())
 
 // SERVICE
 const { getCertificateValidation } = PoCService.getInstance()
@@ -106,6 +107,7 @@ async function onFileChange(event: Event) {
       .then((res) => {
         if (res) {
           console.log('RES', res.data)
+          isDocInfoExtacted.value = false
           certificatePoCValidation.value = res.data
         }
       })
@@ -168,6 +170,14 @@ function handleOpen() {
 
       & .upload-wrapper input {
         display: none;
+      }
+
+      & .disabled-button {
+        background: $c-grey-30;
+        border-color: $c-grey-30;
+        color: $c-grey-50;
+        pointer-events: none;
+        cursor: auto;
       }
 
       & .docs-wrapper {
